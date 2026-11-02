@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Harmonized to the official FixMyPrint brand mark & wordmark */
+  --color-slate-950: #0b1a2a;
+  --color-slate-900: #102338;
+
+  --color-blue-50: #eff7ff;
+  --color-blue-100: #dbeeff;
+  --color-blue-200: #bfe0ff;
+  --color-blue-300: #8cc8ff;
+  --color-blue-400: #4da8ff;
+  --color-blue-500: #0088ff;
+  --color-blue-600: #0070e0;
+  --color-blue-700: #005bb8;
+  --color-blue-800: #004994;
+  --color-blue-900: #08396e;
+  --color-blue-950: #062447;
+
+  /* Harmonized to the lower cyan-teal wing of the FixMyPrint mark */
+  --color-emerald-50: #ecfdf8;
+  --color-emerald-100: #d0f9ec;
+  --color-emerald-200: #a4f1da;
+  --color-emerald-600: #008268;
+  --color-emerald-700: #006b55;
+  --color-emerald-800: #065646;
+  --color-emerald-900: #08473b;
+  --color-emerald-950: #042b24;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: #102338;
+    background-color: #f6f9fc;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: #0b1a2a;
+    text-wrap: balance;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #0b1a2a !important;
+    font-size: 11pt;
+  }
+
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+

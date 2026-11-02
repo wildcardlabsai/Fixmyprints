@@ -1,0 +1,6 @@
+{
+  "name": "FixMyPrint",
+  "description": "Model-aware 3D printer troubleshooting, visual fault diagnostics, step-by-step repair guides, and verified technical reference for FDM and resin 3D printers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
