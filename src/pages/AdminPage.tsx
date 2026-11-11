@@ -82,15 +82,48 @@ export const AdminPage: React.FC = () => {
   const fetchCoverage = useCallback(async () => {
     try {
       setLoadingCoverage(true);
-      const res = await fetch('/api/coverage');
-      if (res.ok) {
-        const json: CoverageResponse = await res.json();
+      let json: CoverageResponse | null = null;
+      try {
+        const res = await fetch('/api/coverage');
+        if (res.ok) {
+          json = await res.json();
+        }
+      } catch {
+        // Continue to static coverage snapshot
+      }
+
+      if (!json) {
+        try {
+          const staticRes = await fetch('/api/coverage.json');
+          if (staticRes.ok) {
+            json = await staticRes.json();
+          }
+        } catch {
+          // Continue to context fallback
+        }
+      }
+
+      if (json) {
         setCoverage(json);
+      } else if (data) {
+        setCoverage({
+          counts: data.coverageCounts,
+          manufacturersWithoutModels: data.manufacturers
+            .filter((m) => !m.modelCount || m.modelCount === 0)
+            .map((m) => ({
+              id: m.id,
+              name: m.name,
+              supportsFdm: m.supportsFdm,
+              supportsResin: m.supportsResin,
+            })),
+          requests: [],
+          recentOutcomes: [],
+        });
       }
     } finally {
       setLoadingCoverage(false);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     fetchCoverage();

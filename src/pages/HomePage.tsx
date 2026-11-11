@@ -49,7 +49,7 @@ const BENEFIT_ITEMS = [
 ] as const;
 
 export const HomePage: React.FC = () => {
-  const { data, loading, error, getImageById } = useAppData();
+  const { data, loading, error, refreshData, getImageById } = useAppData();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
@@ -200,9 +200,16 @@ export const HomePage: React.FC = () => {
   if (error || !data) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <div className="border border-red-200 bg-red-50/60 rounded-xl p-6 text-slate-900">
+        <div className="border border-red-200 bg-red-50/60 rounded-xl p-6 text-slate-900 space-y-4">
           <h2 className="text-lg font-semibold text-red-900">Unable to load FixMyPrint database</h2>
-          <p className="mt-2 text-sm text-red-800">{error || 'Reference catalog unavailable.'}</p>
+          <p className="text-sm text-red-800">{error || 'Reference catalog unavailable.'}</p>
+          <button
+            type="button"
+            onClick={() => refreshData()}
+            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          >
+            Retry Loading Catalog
+          </button>
         </div>
       </div>
     );

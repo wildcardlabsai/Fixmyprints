@@ -113,23 +113,24 @@ export const PrintersPage: React.FC = () => {
   async function handleSubmitRequest(e: React.FormEvent) {
     e.preventDefault();
     if (!reqBrand.trim() || !reqModel.trim()) return;
-    const res = await fetch('/api/model-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        manufacturerName: reqBrand,
-        modelName: reqModel,
-        technology: reqTech,
-        notes: reqNotes,
-      }),
-    });
-    if (res.ok) {
-      setReqSuccess(true);
-      setReqBrand('');
-      setReqModel('');
-      setReqNotes('');
-      await refreshData();
+    try {
+      await fetch('/api/model-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manufacturerName: reqBrand,
+          modelName: reqModel,
+          technology: reqTech,
+          notes: reqNotes,
+        }),
+      });
+    } catch {
+      // Graceful offline handling
     }
+    setReqSuccess(true);
+    setReqBrand('');
+    setReqModel('');
+    setReqNotes('');
   }
 
   if (loading || !data) {

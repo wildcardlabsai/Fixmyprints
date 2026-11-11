@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/bootstrap",
+      "destination": "/api/bootstrap.json"
+    },
+    {
+      "source": "/api/coverage",
+      "destination": "/api/coverage.json"
+    },
+    {
+      "source": "/((?!assets/|api/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

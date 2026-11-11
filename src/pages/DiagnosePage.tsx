@@ -579,15 +579,57 @@ export const DiagnosePage: React.FC = () => {
     try {
       setInterpreting(true);
       setInterpretNote(null);
-      const res = await fetch('/api/symptom-interpret', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: symptomText,
-          printerSlug: selectedPrinter?.slug || null,
-        }),
-      });
-      const json = await res.json();
+      let json: {
+        suggestedCategorySlug?: string;
+        suggestedOptionIds?: string[];
+        clarifyingNote?: string;
+      } | null = null;
+
+      try {
+        const res = await fetch('/api/symptom-interpret', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: symptomText,
+            printerSlug: selectedPrinter?.slug || null,
+          }),
+        });
+        if (res.ok) {
+          json = await res.json();
+        }
+      } catch {
+        // Fall back to local keyword rule engine below
+      }
+
+      // If backend API is not running (e.g. static Vercel host), use deterministic keyword heuristics
+      if (!json || !json.suggestedCategorySlug) {
+        const lower = symptomText.toLowerCase();
+        let fallbackCategorySlug =
+          selectedPrinter?.technology === 'RESIN'
+            ? 'resin-adhesion-supports-delamination'
+            : 'first-layer-adhesion-warping';
+
+        if (lower.includes('resin') || lower.includes('fep') || lower.includes('vat') || lower.includes('support')) {
+          fallbackCategorySlug = 'resin-adhesion-supports-delamination';
+        } else if (lower.includes('lcd') || lower.includes('pixel') || lower.includes('exposure')) {
+          fallbackCategorySlug = 'resin-screen-exposure-curing';
+        } else if (lower.includes('string') || lower.includes('ooz') || lower.includes('blob') || lower.includes('zit') || lower.includes('wet')) {
+          fallbackCategorySlug = 'stringing-blobs-surface-quality';
+        } else if (lower.includes('clog') || lower.includes('jam') || lower.includes('click') || lower.includes('under') || lower.includes('grind') || lower.includes('creep')) {
+          fallbackCategorySlug = 'extrusion-clogs-feeding';
+        } else if (lower.includes('shift') || lower.includes('belt') || lower.includes('ghost') || lower.includes('ring') || lower.includes('spaghetti')) {
+          fallbackCategorySlug = 'layer-shifting-ringing-spaghetti';
+        } else if (lower.includes('ams') || lower.includes('mmu') || lower.includes('cfs') || lower.includes('purge') || lower.includes('probe') || lower.includes('loadcell') || lower.includes('error')) {
+          fallbackCategorySlug = 'bed-mesh-probe-multicolor-ams';
+        }
+
+        json = {
+          suggestedCategorySlug: fallbackCategorySlug,
+          suggestedOptionIds: [],
+          clarifyingNote: 'Matched using FixMyPrint deterministic symptom rules. Select your exact visual fault pattern on the next step to confirm.',
+        };
+      }
+
       if (json.suggestedCategorySlug) {
         const matchedCat = data.diagnostics.categories.find((c) => c.slug === json.suggestedCategorySlug);
         if (matchedCat) {

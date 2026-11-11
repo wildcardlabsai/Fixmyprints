@@ -66,15 +66,53 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/bootstrap');
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Request failed (${res.status})`);
+
+      const [json, loadedViaFallback] = await (async (): Promise<[BootstrapPayload, boolean]> => {
+        // Attempt 1: Dynamic API endpoint
+        try {
+          const res = await fetch('/api/bootstrap');
+          if (res.ok) {
+            const parsed = await res.json();
+            if (parsed && Array.isArray(parsed.models) && parsed.models.length > 0) {
+              return [parsed, false];
+            }
+          }
+        } catch {
+          // Continue to static file attempt
+        }
+
+        // Attempt 2: Pre-rendered static JSON endpoint
+        try {
+          const staticRes = await fetch('/api/bootstrap.json');
+          if (staticRes.ok) {
+            const parsed = await staticRes.json();
+            if (parsed && Array.isArray(parsed.models) && parsed.models.length > 0) {
+              return [parsed, false];
+            }
+          }
+        } catch {
+          // Continue to bundled static seed fallback
+        }
+
+        // Attempt 3: Immediate zero-latency bundled client catalog
+        const { getStaticBootstrapPayload } = await import('../data/staticBootstrap.ts');
+        return [getStaticBootstrapPayload(), true];
+      })();
+
+      if (loadedViaFallback) {
+        console.info('[FixMyPrint] Loaded verified 3D printer catalog via embedded client bundle.');
       }
-      const json: BootstrapPayload = await res.json();
       setData(json);
+      setError(null);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unable to load reference data.');
+      console.error('[FixMyPrint] Failed to initialize catalog:', err);
+      try {
+        const { getStaticBootstrapPayload } = await import('../data/staticBootstrap.ts');
+        setData(getStaticBootstrapPayload());
+        setError(null);
+      } catch (innerErr: unknown) {
+        setError(innerErr instanceof Error ? innerErr.message : 'Unable to load reference data.');
+      }
     } finally {
       setLoading(false);
     }

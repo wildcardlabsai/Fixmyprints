@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server.ts",
     "start": "node --import tsx server.ts",
-    "build": "vite build",
+    "build": "tsx scripts/export-static-database.ts && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "clean": "rm -rf dist server.js",
